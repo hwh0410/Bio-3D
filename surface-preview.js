@@ -19,6 +19,25 @@ const mats={};for(const [key,color] of Object.entries(colors)){
  mats[key]=new THREE.MeshStandardMaterial({color,roughness:key==='screen'?.63:.80,metalness:0,side:THREE.DoubleSide,emissive:key==='led'?color:0,emissiveIntensity:key==='led'?.10:0});
 }
 const toon=new THREE.Group();scene.add(toon);
+const BIO_BUILD='v0.7.1 · 2026-11-06';
+const COLOR_TEST_NAMES=/^(HeadOuter|HeadShell|BodyBase|BodyShell|BootBorder|Boot|BootToe|Thigh|ArmSkin)/;
+const originalMaterials=new Map();
+let flatColorMode=false;
+const flatGreen=new THREE.MeshBasicMaterial({color:'#7BC043',side:THREE.DoubleSide});
+const flatLight=new THREE.MeshBasicMaterial({color:'#B8FF66',side:THREE.DoubleSide});
+function setFlatColorMode(enabled){
+ flatColorMode=enabled;
+ toon.traverse(o=>{
+  if(!o.isMesh||!COLOR_TEST_NAMES.test(o.name))return;
+  if(!originalMaterials.has(o.uuid))originalMaterials.set(o.uuid,o.material);
+  if(enabled)o.material=o.name.startsWith('BootToe')?flatLight:flatGreen;
+  else o.material=originalMaterials.get(o.uuid);
+ });
+ document.querySelector('#diagnostic').textContent=enabled?'關閉無光照色票檢查':'啟用無光照色票檢查';
+ status.textContent=BIO_BUILD+' · '+(enabled?'色票檢查：主體表面不受燈光影響':'一般材質顯示');
+}
+document.querySelector('#diagnostic').addEventListener('click',()=>setFlatColorMode(!flatColorMode));
+
 function mesh(name,geometry,color,parent=toon,p=[0,0,0]){
  const o=new THREE.Mesh(geometry,mats[color]);o.name=name;o.position.set(...p);parent.add(o);return o;
 }
@@ -190,7 +209,7 @@ function setPose(pose){
   if(pose==='welcome'&&side===1){upper.rotation.z=1.0;fore.rotation.z=.65;hand.rotation.z=-.20;}
  }
  document.querySelectorAll('[data-pose]').forEach(x=>x.classList.toggle('active',x.dataset.pose===pose));
- status.textContent='曲面母版 Beta · '+(pose==='welcome'?'歡迎招手':'正式站姿')+' · 手臂蒙皮已啟用';
+ status.textContent=BIO_BUILD+' · '+(pose==='welcome'?'歡迎招手':'正式站姿')+' · 手臂蒙皮已啟用';
 }
 const faceGroup=new THREE.Group();toon.add(faceGroup);
 function setExpression(kind){
@@ -211,6 +230,16 @@ function setExpression(kind){
  else pipe('smile',[[-.14,3.08,.655],[-.07,3.045,.666],[0,3.035,.669],[.07,3.045,.666],[.14,3.08,.655]],.022,'led',faceGroup);
 }
 setExpression('smile');setPose('formal');
+// Expose diagnostic information for a clear cached-script versus geometry distinction.
+const diagnostics={
+ version:BIO_BUILD,
+ headShell:toon.getObjectByName('HeadOuter')?.material?.color?.getHexString(),
+ bodyShell:toon.getObjectByName('BodyBase')?.material?.color?.getHexString(),
+ skeletonBones:arms.reduce((n,a)=>n+3,0),
+ mode:'surface-preview'
+};
+console.info('Bio model diagnostics',diagnostics);
+
 document.querySelectorAll('[data-pose]').forEach(x=>x.addEventListener('click',()=>setPose(x.dataset.pose)));
 document.querySelector('#expression').addEventListener('change',e=>setExpression(e.target.value));
 // Responsive perspective fitting. Keeps the complete character visible in narrow mobile canvases.
