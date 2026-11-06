@@ -60,3 +60,11 @@ The new rigging path is now tracked in:
 - [Rig Lab — deformable arm preview](rig-preview.html) (published at `https://hwh0410.github.io/Bio-3D/rig-preview.html` when Pages updates).
 
 The rig lab uses **actual Three.js Bones + Skeleton + SkinnedMesh skin indices/weights** on the arms. It is a technical proof of concept, **not a finished high-fidelity GLB or Blender file**. The official v0.4 character viewer and transparent PNG exporter remain unchanged.
+
+## New surface master beta (shape development)
+
+Open [Surface Preview](surface-preview.html) or the Pages URL `https://hwh0410.github.io/Bio-3D/surface-preview.html`.
+
+This experimental character uses **superellipsoid surface meshes** for head, face, torso and boots; a custom ring-built helmet dome and visor; and **SkinnedMesh** arms driven by arm bones and elbow skin weights. Front / three-quarter / side / back camera presets, expressions, pose switching, and alpha PNG screenshots are included.
+
+**Scope:** This is a procedural **surface-mesh beta**, **not** a finished high-fidelity hand-retopologized character or verified Blender/GLB deliverable. It is intentionally kept separate from the existing stable viewer so the original design remains available. The next quality gate is image-overlay validation against the supplied design sheet.
