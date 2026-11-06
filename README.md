@@ -38,3 +38,15 @@ The repository root now contains a **static 3D studio**, with no backend or data
 Expected published URL: **https://hwh0410.github.io/Bio-3D/** (available only after GitHub Pages is enabled and deployed).
 
 This viewer uses a procedural Three.js reconstruction matching the v0.1 Python model, so the viewer does **not** depend on the GLB build workflow or any binary file being committed. Three.js is fetched from a CDN, so viewing requires an internet connection. PNG export occurs entirely in the browser, including on supported mobile browsers.
+
+
+## v0.4 mascot refinement — Scheme B
+
+- Rebuilt the head and display with softened rectangular surfaces rather than overlapping spheres.
+- Adjusted helmet dome, wide safety brim, ribs, leaf badge and specular details.
+- Improved shorter body proportions, compact limbs, gloves, chunky boots and chest gauge.
+- Introduced a **pose selector**: formal standing (default) and right-hand welcome.
+- Preserved orbit controls, facial expressions, four camera presets, and transparent PNG export.
+- The Pages viewer still uses in-browser Three.js geometry. **The Python-generated GLB/OBJ are not automatically updated by these viewer changes**.
+
+Deployment: commit changes to main; the existing GitHub Pages branch-root deployment should publish the updates.
