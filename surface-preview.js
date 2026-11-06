@@ -19,8 +19,8 @@ const mats={};for(const [key,color] of Object.entries(colors)){
  mats[key]=new THREE.MeshStandardMaterial({color,roughness:key==='screen'?.63:.80,metalness:0,side:THREE.DoubleSide,emissive:key==='led'?color:0,emissiveIntensity:key==='led'?.10:0});
 }
 const toon=new THREE.Group();scene.add(toon);
-const BIO_BUILD='v0.8.0 · curve-pass-1';
-const COLOR_TEST_NAMES=/^(HeadOuter|HeadShell|BodyBase|BodyShell|BootBorder|Boot|BootToe|Thigh|ArmSkin)/;
+const BIO_BUILD='v0.9.0 · armor-layering';
+const COLOR_TEST_NAMES=/^(HeadOuter|HeadShell|BodyBase|BodyShell|ChestPlate|BellyHighlight|ShoulderArmor|UpperArmArmor|ForearmArmor|ShinArmor|BootBorder|Boot|BootToe|Thigh|ArmSkin)/;
 const originalMaterials=new Map();
 let flatColorMode=false;
 const flatGreen=new THREE.MeshBasicMaterial({color:'#7BC043',side:THREE.DoubleSide});
@@ -134,15 +134,24 @@ superBody('BodyShell',[0,1.99,.055],[.73,.58,.44],[.67,.82],'green');
 // A small lower connector creates a dark mechanical seam without covering the suit.
 superBody('LowerTorso',[0,1.47,.03],[.56,.18,.36],[.84,.78],'shadow');
 // A slim curved highlight, not an oversized dark panel over the green body.
-superBody('BellyHighlight',[0,2.03,.454],[.31,.25,.012],[.90,.86],'light');
+// Chest cuirass floats shallowly above the bodysuit, without hiding the bright green shell.
+superBody('ChestPlate',[0,2.045,.452],[.575,.435,.064],[.66,.76],'green');
+superBody('ChestEdge',[0,1.65,.425],[.43,.041,.037],[.76,.76],'shadow');
 oval('Neck',[0,2.63,-.01],[.26,.14,.26],'shadow');
 for(const s of [-1,1]){
  const x=s*.44;
+ // A recessed dark hip connector belongs BELOW the green leg armor.
+ oval('HipSocket'+s,[x,1.405,-.025],[.275,.14,.27],'shadow');
  superBody('Thigh'+s,[x,1.00,0],[.27,.43,.29],[.79,.73],'green');
+ superBody('ShinArmor'+s,[x,1.025,.247],[.242,.31,.071],[.72,.77],'green');
+ superBody('ShinTopEdge'+s,[x,1.274,.225],[.21,.035,.057],[.76,.84],'light');
  oval('Knee'+s,[x,.83,.20],[.19,.09,.07],'shadow');
  oval('Ankle'+s,[x,.50,.04],[.22,.11,.22],'shadow');
  // Green boots with a subtle dark sole instead of fully black footwear.
  superBody('BootSole'+s,[x,.15,.23],[.38,.09,.47],[.64,.57],'shadow');
+ // Dark boot entry is inset; a green cuff wraps over its edge.
+ superBody('BootCuffDark'+s,[x,.516,.05],[.255,.103,.277],[.77,.76],'shadow');
+ superBody('BootCuff'+s,[x,.477,.087],[.309,.116,.304],[.68,.73],'green');
  superBody('BootBorder'+s,[x,.295,.24],[.39,.22,.47],[.63,.58],'green');
  superBody('Boot'+s,[x,.325,.27],[.35,.21,.43],[.64,.60],'green');
  superBody('BootToe'+s,[x,.34,.56],[.27,.10,.13],[.62,.72],'light');
@@ -214,7 +223,16 @@ function arm(side){
  geo.setIndex(ind);geo.computeVertexNormals();
  const skin=new THREE.SkinnedMesh(geo,mats.green);skin.name='ArmSkin'+(side<0?'L':'R');skin.frustumCulled=false;
  toon.add(skin);toon.updateMatrixWorld(true);skin.bind(new THREE.Skeleton([upper,fore,hand]));
- oval('ShoulderJoint'+side,[x,shoulderY,0],[.26,.26,.27],'shadow');
+ // Armor follows bone rotations; skinned sleeve beneath still bends at the elbow.
+ oval('ShoulderSocket'+side,[0,-.014,0],[.223,.225,.228],'shadow',upper);
+ superBody('ShoulderArmor'+side,[side*.038,.035,.052],[.285,.224,.283],[.67,.72],'green',upper);
+ superBody('ShoulderHighlight'+side,[side*.025,.111,.233],[.155,.043,.031],[.75,.86],'light',upper);
+ superBody('UpperArmArmor'+side,[side*.028,-.20,.041],[.238,.218,.244],[.69,.78],'green',upper);
+ // Elbow joint remains smaller and recessed between overlapping plates.
+ superBody('ElbowJoint'+side,[0,-.007,0],[.192,.112,.194],[.78,.76],'shadow',fore);
+ superBody('ForearmArmor'+side,[side*.008,-.195,.056],[.234,.223,.241],[.66,.77],'green',fore);
+ superBody('ForearmStripe'+side,[0,-.23,.286],[.163,.075,.017],[.8,.78],'light',fore);
+ superBody('WristCuff'+side,[0,.066,.045],[.229,.105,.238],[.74,.80],'shadow',hand);
  superBody('Glove'+side,[0,-.05,.055],[.205,.195,.215],[.60,.60],'shadow',hand);
  superBody('GlovePalm'+side,[0,-.005,.135],[.11,.075,.05],[.92,.82],'shadow',hand);
  arms.push({side,upper,fore,hand});
