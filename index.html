@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#153c2b" />
+  <meta name="description" content="沼氣領航員拜爾 Bio 3D 角色預覽與透明背景 PNG 輸出工具" />
+  <title>拜爾 Bio — 3D 模型工作室</title>
+  <link rel="stylesheet" href="./style.css" />
+  <script type="importmap">
+    {"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.164.1/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.164.1/examples/jsm/"}}
+  </script>
+</head>
+<body>
+<header class="topbar">
+  <div class="brand"><div class="logo">◈</div><div><strong>沼氣領航員・拜爾</strong><small>Bio · Biogas Inspector Buddy</small></div></div>
+  <div class="topright"><span class="status"><i></i> 3D Studio v0.2</span><a href="https://github.com/hwh0410/Bio-3D" target="_blank" rel="noopener">GitHub ↗</a></div>
+</header>
+<main class="layout">
+  <section class="stage" aria-label="3D 預覽畫布">
+    <div class="stage-top"><div><span class="eyebrow">CHARACTER VIEWER</span><h1>認識拜爾 Bio</h1><p>拖曳旋轉 · 捲動或雙指縮放 · 點擊按鈕輸出透明背景圖片</p></div><span id="angle-label" class="view-chip">正面視角</span></div>
+    <div class="canvas-area checker" id="canvas-area"><div id="viewer" aria-label="互動式拜爾 3D 模型"></div><div class="watermark">BIO / 3D CHARACTER</div><div class="gesture-hint">⟲ 拖曳以旋轉角色</div></div>
+    <div class="stage-bottom"><span id="status" role="status">載入 3D 模型中…</span><span>透明 PNG 輸出不包含預覽背景</span></div>
+  </section>
+  <aside class="panel">
+    <section><div class="section-heading"><span class="num">01</span><h2>觀看角度</h2></div>
+      <div class="view-buttons"><button class="viewbtn active" data-view="front">正面</button><button class="viewbtn" data-view="three">3/4 視角</button><button class="viewbtn" data-view="side">側面</button><button class="viewbtn" data-view="back">背面</button></div>
+      <button class="subtle wide" id="reset">↻ 恢復初始視角</button>
+    </section>
+    <section><div class="section-heading"><span class="num">02</span><h2>展示設定</h2></div>
+      <label class="field-label" for="backdrop">預覽背景 <small>不影響透明輸出</small></label>
+      <select id="backdrop"><option value="checker">透明棋盤格</option><option value="white">純白</option><option value="dark">深色</option><option value="green">柔和綠</option></select>
+      <label class="field-label" for="expression">表情</label>
+      <select id="expression"><option value="smile">親切友善</option><option value="happy">開心微笑</option><option value="focus">專注巡檢</option><option value="think">思考判斷</option><option value="alert">注意警示</option><option value="stop">嚴格停止</option></select>
+      <label class="field-label" for="zoom">畫面比例 / 縮放 <span id="zoom-read">100%</span></label>
+      <input type="range" id="zoom" min="65" max="160" value="100" />
+    </section>
+    <section><div class="section-heading"><span class="num">03</span><h2>截圖匯出</h2></div>
+      <label class="field-label" for="resolution">圖片尺寸</label>
+      <select id="resolution"><option value="1024">1024 × 1024 px</option><option value="2048" selected>2048 × 2048 px</option><option value="3072">3072 × 3072 px</option></select>
+      <p class="note">截取當前旋轉視角，輸出真正含 Alpha 通道的透明 PNG；可直接放入簡報、手冊或網站。</p>
+      <button id="download" class="primary wide">↓ 下載透明背景 PNG</button>
+      <p class="note tiny">瀏覽器截圖由本機即時產生，不會上傳角色畫面。</p>
+    </section>
+    <section class="about"><div class="section-heading"><span class="num">04</span><h2>模型說明</h2></div><p>依拜爾角色設定圖建立的可旋轉程序化 3D 初版，保留黃色安全帽、葉片標誌、發光眼睛與綠色機器人造型。後續可持續精修比例及動作。</p></section>
+  </aside>
+</main>
+<footer>© Bio · 沼氣巡檢員 / Biogas Inspector Buddy · 角色展示工作室</footer>
+<script type="module" src="./viewer.js"></script>
+</body></html>
