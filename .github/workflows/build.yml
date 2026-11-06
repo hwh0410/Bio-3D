@@ -1,0 +1,35 @@
+name: Build Bio 3D
+on:
+  push:
+    paths:
+      - 'scripts/**'
+      - 'requirements.txt'
+      - '.github/workflows/build.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install -r requirements.txt
+      - run: python scripts/build_bio.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Bio-v0.1-3D
+          path: |
+            models/Bio_v0.1.glb
+            models/Bio_v0.1.obj
+      - name: Commit GLB to repository
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f models/Bio_v0.1.glb
+          if ! git diff --cached --quiet; then
+            git commit -m "build: update Bio v0.1 GLB"
+            git push
+          fi
