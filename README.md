@@ -1,3 +1,14 @@
+## Free GPU workflow (Google Colab)
+
+**Start here:** [Open the Bio TripoSR notebook in Colab](https://colab.research.google.com/github/hwh0410/Bio-3D/blob/main/colab/Bio_3D_TripoSR_Colab.ipynb).
+
+1. In Colab, select Runtime → Change runtime type → GPU (if available).
+2. Run the cells in order; upload **front.png** cropped from Bio's character sheet.
+3. Download the generated `mesh.glb` and inspect in [Bio Master Viewer](https://hwh0410.github.io/Bio-3D/master-preview.html).
+4. Do not treat TripoSR as multi-image reconstruction; use side/back references for subsequent Blender corrections.
+
+Free Colab GPU availability and dependency compatibility are **not guaranteed**. The notebook is validated as JSON and against the official TripoSR CLI options, but has not yet been executed on a real Colab GPU.
+
 ## NEW: Blender → GLB master workflow
 
 The project now has a **non-procedural modeling pipeline**. Follow [NEW_MODEL_PIPELINE.md](docs/NEW_MODEL_PIPELINE.md): prepare four references, generate or create an actual editable 3D mesh, refine in Blender, export `models/Bio_Master.glb`, then preview with [Master Viewer](master-preview.html). The viewer also accepts a local GLB file and exports transparent PNGs. **No completed AI-generated or hand-refined master GLB has been committed yet**. The old procedural viewer remains available for comparison.
