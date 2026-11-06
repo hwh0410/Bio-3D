@@ -241,6 +241,7 @@ function applyViewPreset(name=currentAngle){
  orbit.update();
 }
 document.querySelector('#angle').addEventListener('change',e=>applyViewPreset(e.target.value));
+document.querySelector('#background-choice').addEventListener('change',e=>{document.querySelector('.surface-preview').className='surface-preview bg-'+e.target.value;});
 document.querySelector('#recenter').addEventListener('click',()=>applyViewPreset(currentAngle));
 function resize(){
  const b=area.getBoundingClientRect();
