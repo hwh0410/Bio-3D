@@ -19,7 +19,7 @@ const mats={};for(const [key,color] of Object.entries(colors)){
  mats[key]=new THREE.MeshStandardMaterial({color,roughness:key==='screen'?.63:.80,metalness:0,side:THREE.DoubleSide,emissive:key==='led'?color:0,emissiveIntensity:key==='led'?.10:0});
 }
 const toon=new THREE.Group();scene.add(toon);
-const BIO_BUILD='v0.9.0 · armor-layering';
+const BIO_BUILD='v0.10.0 · armor-refine';
 const COLOR_TEST_NAMES=/^(HeadOuter|HeadShell|BodyBase|BodyShell|ChestPlate|BackArmorPanel|BellyHighlight|ShoulderArmor|UpperArmArmor|ForearmArmor|ShinArmor|BootBorder|Boot|BootToe|Thigh|ArmSkin)/;
 const originalMaterials=new Map();
 let flatColorMode=false;
@@ -135,10 +135,14 @@ superBody('BodyShell',[0,1.99,.055],[.73,.58,.44],[.67,.82],'green');
 superBody('LowerTorso',[0,1.47,.03],[.56,.18,.36],[.84,.78],'shadow');
 // A slim curved highlight, not an oversized dark panel over the green body.
 // Chest cuirass floats shallowly above the bodysuit, without hiding the bright green shell.
-superBody('ChestPlate',[0,2.045,.462],[.575,.435,.064],[.66,.76],'green');
+// A fitted, shallow breastplate with no swollen pillow-like protrusion.
+superBody('ChestPlate',[0,2.045,.445],[.548,.402,.037],[.63,.72],'green');
+// Subtle segmented perimeter, inset into the cuirass rather than protruding.
+pipe('ChestPlateEdge',[[ -.43,2.26,.466],[-.48,2.03,.471],[-.39,1.79,.473],[0,1.70,.477],[.39,1.79,.473],[.48,2.03,.471],[.43,2.26,.466]],.010,'shadow');
 // Back access plate helps the shell read as wearable armor from rear views.
-superBody('BackArmorPanel',[0,2.05,-.478],[.40,.315,.034],[.79,.77],'green');
-superBody('BackArmorSeam',[0,2.05,-.519],[.345,.253,.015],[.78,.75],'shadow');
+// Rear service hatch is almost flush and has a thin border, not a large bulge.
+superBody('BackArmorPanel',[0,2.05,-.483],[.355,.245,.019],[.72,.73],'green');
+superBody('BackArmorSeam',[0,2.05,-.505],[.305,.204,.010],[.78,.75],'shadow');
 superBody('ChestEdge',[0,1.65,.425],[.43,.041,.037],[.76,.76],'shadow');
 oval('Neck',[0,2.63,-.01],[.26,.14,.26],'shadow');
 for(const s of [-1,1]){
@@ -146,15 +150,16 @@ for(const s of [-1,1]){
  // A recessed dark hip connector belongs BELOW the green leg armor.
  oval('HipSocket'+s,[x,1.405,-.025],[.275,.14,.27],'shadow');
  superBody('Thigh'+s,[x,1.00,0],[.27,.43,.29],[.79,.73],'green');
- superBody('ShinArmor'+s,[x,1.025,.247],[.242,.31,.071],[.72,.77],'green');
- superBody('ShinTopEdge'+s,[x,1.274,.225],[.21,.035,.057],[.76,.84],'light');
+ // Slim greave follows the leg, preserving a small dark ankle recess.
+ superBody('ShinArmor'+s,[x,1.028,.253],[.222,.293,.037],[.72,.77],'green');
+ pipe('ShinPlateRim'+s,[[x-.19,1.19,.265],[x-.19,.94,.273],[x-.14,.78,.272],[x+.14,.78,.272],[x+.19,.94,.273],[x+.19,1.19,.265]],.010,'shadow');
  oval('Knee'+s,[x,.83,.20],[.19,.09,.07],'shadow');
  oval('Ankle'+s,[x,.50,.04],[.22,.11,.22],'shadow');
  // Green boots with a subtle dark sole instead of fully black footwear.
  superBody('BootSole'+s,[x,.15,.23],[.38,.09,.47],[.64,.57],'shadow');
  // Dark boot entry is inset; a green cuff wraps over its edge.
- superBody('BootCuffDark'+s,[x,.516,.05],[.255,.103,.277],[.77,.76],'shadow');
- superBody('BootCuff'+s,[x,.477,.087],[.309,.116,.304],[.68,.73],'green');
+ superBody('BootCuffDark'+s,[x,.513,.05],[.225,.076,.240],[.77,.76],'shadow');
+ superBody('BootCuff'+s,[x,.473,.10],[.302,.089,.289],[.68,.73],'green');
  superBody('BootBorder'+s,[x,.295,.24],[.39,.22,.47],[.63,.58],'green');
  superBody('Boot'+s,[x,.325,.27],[.35,.21,.43],[.64,.60],'green');
  superBody('BootToe'+s,[x,.34,.56],[.27,.10,.13],[.62,.72],'light');
@@ -228,16 +233,23 @@ function arm(side){
  toon.add(skin);toon.updateMatrixWorld(true);skin.bind(new THREE.Skeleton([upper,fore,hand]));
  // Armor follows bone rotations; skinned sleeve beneath still bends at the elbow.
  oval('ShoulderSocket'+side,[0,-.014,0],[.223,.225,.228],'shadow',upper);
- superBody('ShoulderArmor'+side,[side*.038,.035,.052],[.285,.224,.283],[.67,.72],'green',upper);
- superBody('ShoulderHighlight'+side,[side*.025,.111,.233],[.155,.043,.031],[.75,.86],'light',upper);
- superBody('UpperArmArmor'+side,[side*.028,-.20,.041],[.238,.218,.244],[.69,.78],'green',upper);
+ // Smaller cap follows the upper-arm bone, hiding the joint from above.
+ superBody('ShoulderArmor'+side,[side*.033,.027,.045],[.259,.185,.258],[.62,.69],'green',upper);
+ // Small lower lip creates a wearable seam between cap and sleeve.
+ superBody('UpperArmArmor'+side,[side*.023,-.192,.043],[.211,.213,.214],[.67,.76],'green',upper);
+ superBody('UpperArmCuff'+side,[side*.025,-.357,.045],[.218,.050,.218],[.72,.79],'shadow',upper);
  // Elbow joint remains smaller and recessed between overlapping plates.
- superBody('ElbowJoint'+side,[0,-.007,0],[.192,.112,.194],[.78,.76],'shadow',fore);
- superBody('ForearmArmor'+side,[side*.008,-.195,.056],[.234,.223,.241],[.66,.77],'green',fore);
- superBody('ForearmStripe'+side,[0,-.23,.286],[.163,.075,.017],[.8,.78],'light',fore);
- superBody('WristCuff'+side,[0,.066,.045],[.229,.105,.238],[.74,.80],'shadow',hand);
- superBody('Glove'+side,[0,-.05,.055],[.205,.195,.215],[.60,.60],'shadow',hand);
- superBody('GlovePalm'+side,[0,-.005,.135],[.11,.075,.05],[.92,.82],'shadow',hand);
+ superBody('ElbowJoint'+side,[0,-.006,0],[.162,.089,.160],[.78,.76],'shadow',fore);
+ superBody('ForearmArmor'+side,[side*.008,-.185,.048],[.214,.209,.218],[.65,.77],'green',fore);
+ // Slim dark trim is partly covered by the glove rim.
+ superBody('WristCuff'+side,[0,.046,.034],[.197,.061,.198],[.72,.77],'shadow',hand);
+ superBody('Glove'+side,[0,-.076,.060],[.213,.190,.211],[.64,.65],'shadow',hand);
+ superBody('GlovePalm'+side,[0,-.073,.247],[.156,.125,.029],[.78,.80],'shadow',hand);
+ // Three shallow knuckle lobes make it read as a padded glove, not a cube.
+ for(let i=-1;i<=1;i++){
+  oval('GloveFinger'+side+'_'+i,[i*.117,-.186,.216],[.065,.070,.059],'shadow',hand);
+ }
+ oval('GloveThumb'+side,[side*-.182,-.061,.139],[.075,.104,.085],'shadow',hand);
  arms.push({side,upper,fore,hand});
 }
 arm(-1);arm(1);
