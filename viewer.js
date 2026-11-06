@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 
 const view = document.getElementById('viewer');
 const area = document.getElementById('canvas-area');
@@ -14,8 +15,8 @@ view.appendChild(renderer.domElement);
 
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(34, 1, .1, 100);
-const target = new THREE.Vector3(0, 2.15, 0);
-camera.position.set(0, 2.6, 9.9);
+const target = new THREE.Vector3(0, 2.18, 0);
+camera.position.set(0, 2.65, 9.0);
 const controls = new OrbitControls(camera, renderer.domElement);
 controls.target.copy(target);
 controls.enableDamping = true;
@@ -56,71 +57,143 @@ function curve(name,pts,r,color,parent=root){
  const path = new THREE.CatmullRomCurve3(pts.map(p=>pos(...p)));
  return add(new THREE.Mesh(new THREE.TubeGeometry(path,Math.max(12,pts.length*4),r,8,false),mats[color]),name,parent);
 }
-for(const side of [-1,1]){
- const s=side<0?'left':'right',x=side*.42;
- oval(s+'_leg_black',[x,0,1],[.31,.31,.60],'ink');
- oval(s+'_leg',[x,-.02,1],[.275,.28,.54],'lime');
- oval(s+'_ankle',[x,-.06,.49],[.29,.30,.20],'dark');
- oval(s+'_boot_outline',[x,-.2,.31],[.39,.50,.30],'ink');
- oval(s+'_boot',[x,-.23,.34],[.355,.45,.245],'lime');
- oval(s+'_toe',[x,-.48,.29],[.32,.22,.15],'glow');
+
+/* Bio v0.4 — reference-sheet silhouette: broad visor, softened rectangular head,
+   short green torso, expressive gloves, large footwear, formal standing pose. */
+function rounded(name,center,size,r,color,parent=root){
+ const g=new RoundedBoxGeometry(size[0],size[2],size[1],5,Math.min(r,.45*Math.min(...size)));
+ const m=new THREE.Mesh(g,mats[color]);m.position.copy(pos(...center));
+ return add(m,name,parent);
 }
-oval('torso_outline',[0,0,1.95],[.81,.47,.78],'ink');
-oval('torso',[0,-.025,1.98],[.755,.435,.73],'lime');
-oval('waist',[0,0,1.43],[.59,.43,.17],'dark');
-oval('neck',[0,0,2.62],[.29,.31,.2],'dark');
+function detailCurve(name,points,r,color,parent=root){return curve(name,points,r,color,parent);}
+const poseGroups=[];let pose='formal';
+for(const side of [-1,1]){
+ const s=side<0?'left':'right',x=side*.43;
+ oval(s+'_hip',[x,0,1.40],[.31,.32,.28],'ink');
+ rounded(s+'_leg_black',[x,0,1.02],[.57,.57,.9],.23,'ink');
+ rounded(s+'_leg',[x,-.025,1.025],[.50,.53,.79],.22,'lime');
+ oval(s+'_knee_pad',[x,-.32,.88],[.24,.075,.15],'dark');
+ oval(s+'_ankle',[x,-.055,.51],[.29,.29,.19],'dark');
+ rounded(s+'_boot_rim',[x,-.25,.31],[.79,1.01,.51],.24,'ink');
+ rounded(s+'_boot',[x,-.27,.35],[.71,.94,.43],.21,'lime');
+ rounded(s+'_toe_plate',[x,-.63,.29],[.59,.21,.14],.065,'glow');
+}
+oval('body_dark',[0,0,1.96],[.78,.46,.68],'ink');
+rounded('body_shell',[0,-.015,1.97],[1.42,.84,1.17],.40,'lime');
+oval('belly_shine',[-.26,-.445,2.10],[.30,.025,.19],'glow');
+oval('waist_dark',[0,0,1.47],[.61,.43,.18],'dark');
+oval('collar_dark',[0,0,2.56],[.32,.32,.14],'ink');
+oval('collar_lime',[0,0,2.60],[.25,.27,.11],'lime');
+
+function drawHand(s,at,kind,parent){
+ const [x,y,z]=at;
+ // The palms are softly squared like the character sheet, not circular boxing gloves.
+ rounded(s+'_glove_edge',[x,y,z],[.44,.42,.43],.16,'ink',parent);
+ rounded(s+'_glove',[x,y-.025,z+.02],[.38,.38,.36],.145,'dark',parent);
+ for(let i=0;i<3;i++){
+   const fingerX=x+(i-1)*.105;
+   oval(s+'_knuckle_'+i,[fingerX,y-.245,z+.005],[.067,.079,.097],'dark',parent);
+ }
+ oval(s+'_thumb',[x+(x>0?-.20:.20),y-.15,z+.06],[.115,.12,.14],'dark',parent);
+ if(kind==='wave'){
+  // Raised open hand facing viewer, visually readable from the default camera.
+  rounded(s+'_palm',[x,y-.09,z+.09],[.43,.18,.40],.08,'dark',parent);
+  for(let i=0;i<4;i++){
+   let finger=x-.17+i*.115;
+   rod(s+'_finger_'+i,[finger,y-.09,z+.20],[finger,y-.09,z+.43-(i===0||i===3?.065:0)],.056,'dark',parent);
+  }
+ }
+}
+function drawArms(mode){
+ for(const g of poseGroups){root.remove(g);g.traverse(o=>{if(o.geometry)o.geometry.dispose();});}
+ poseGroups.length=0;
+ for(const side of [-1,1]){
+  const s=side<0?'left':'right';const g=new THREE.Group();g.name=s+'_arm_pose';root.add(g);poseGroups.push(g);
+  const isWaving=mode==='welcome' && side===1;
+  const shoulder=[side*.79,-.025,2.26];
+  const elbow=isWaving?[side*1.16,-.04,2.11]:[side*1.06,-.015,1.86];
+  const wrist=isWaving?[side*1.48,-.10,2.54]:[side*1.09,-.16,1.57];
+  oval(s+'_shoulder_outline',shoulder,[.305,.30,.28],'ink',g);
+  oval(s+'_shoulder_color',[side*.81,-.044,2.28],[.255,.267,.235],'lime',g);
+  rod(s+'_upper_outline',shoulder,elbow,.247,'ink',g);
+  rod(s+'_upper',shoulder,elbow,.203,'lime',g);
+  oval(s+'_elbow',[...elbow],[.26,.27,.24],'dark',g);
+  rod(s+'_forearm_outline',elbow,wrist,.238,'ink',g);
+  rod(s+'_forearm',elbow,wrist,.195,'lime',g);
+  oval(s+'_cuff',wrist,[.246,.25,.13],'ink',g);
+  const hand=isWaving?[side*1.48,-.12,2.75]:[side*1.10,-.20,1.46];
+  drawHand(s,hand,isWaving?'wave':'relaxed',g);
+ }
+ pose=mode;
+}
+drawArms('formal');
+
+// Rounded-square head: the most recognizable feature in the original reference.
+rounded('head_ink',[0,-.02,3.21],[2.15,1.11,1.42],.48,'ink');
+rounded('head_green',[0,-.045,3.22],[2.04,1.04,1.34],.45,'lime');
+rounded('face_black',[0,-.603,3.225],[1.82,.16,1.075],.36,'ink');
+rounded('face_screen',[0,-.702,3.235],[1.71,.12,.962],.33,'face');
 for(const side of [-1,1]){
  const s=side<0?'left':'right';
- oval(s+'_shoulder_outline',[side*.78,0,2.30],[.29,.32,.29],'ink');
- oval(s+'_shoulder',[side*.80,-.02,2.32],[.235,.29,.23],'lime');
- const a=[side*.88,0,2.2],b=[side*1.05,-.025,1.79];
- rod(s+'_upper_black',a,b,.245,'ink');rod(s+'_upper',a,b,.215,'lime');
- oval(s+'_elbow',[side*1.05,-.025,1.78],[.24,.24,.23],'dark');
- rod(s+'_forearm',[side*1.06,-.035,1.75],[side*1.09,-.13,1.44],.22,'lime');
- oval(s+'_glove_outline',[side*1.09,-.13,1.34],[.25,.25,.23],'ink');
- oval(s+'_glove',[side*1.09,-.18,1.36],[.21,.20,.205],'dark');
+ disk(s+'_ear_black',[side*1.075,-.05,3.20],.29,.155,'ink','x');
+ disk(s+'_ear_ring',[side*1.175,-.05,3.20],.224,.072,'lime','x');
+ disk(s+'_ear_disc',[side*1.216,-.05,3.20],.165,.050,'dark','x');
 }
-oval('head_outline',[0,-.01,3.21],[1.02,.53,.75],'ink');
-oval('head_shell',[0,-.035,3.2],[.965,.50,.705],'lime');
-oval('screen_border',[0,-.463,3.22],[.805,.155,.545],'ink');
-oval('screen',[0,-.548,3.24],[.75,.11,.49],'face');
-for(const side of [-1,1]){
- const s=side<0?'left':'right';
- disk(s+'_ear_rim',[side*.965,-.05,3.2],.28,.15,'ink','x');
- disk(s+'_ear',[side*1.045,-.05,3.2],.215,.07,'lime','x');
- disk(s+'_ear_center',[side*1.085,-.05,3.2],.156,.045,'dark','x');
-}
-oval('helmet_outline',[0,-.005,3.91],[1.055,.66,.49],'ink');
-oval('helmet_crown',[0,-.018,3.94],[1.012,.625,.44],'yellow');
-oval('helmet_brim_outline',[0,-.27,3.78],[1.18,.76,.17],'ink');
-oval('helmet_brim',[0,-.29,3.82],[1.14,.73,.115],'yellow');
-curve('helmet_ridge',[[0,-.59,3.91],[0,-.52,4.18],[0,-.25,4.35]],.024,'orange');
-oval('helmet_leaf_white',[0,-.635,4.115],[.175,.045,.205],'white');
-oval('helmet_leaf_green',[0,-.674,4.126],[.125,.04,.158],'dark');
-curve('helmet_leaf_vein',[[-.06,-.724,4.04],[0,-.724,4.10],[.07,-.716,4.19]],.014,'white');
-disk('chest_gauge_white',[0,-.458,2.13],.247,.034,'white','y');
-disk('chest_gauge_rim',[0,-.479,2.13],.201,.035,'dark','y');
-disk('chest_gauge_face',[0,-.501,2.13],.168,.024,'white','y');
-['lime','lime','yellow','orange','red'].forEach((c,i)=>{ const t=Math.PI-(i+.5)*Math.PI/5;oval('marker_'+i,[.137*Math.cos(t),-.523,2.13+.137*Math.sin(t)],[.04,.016,.04],c);});
-rod('gauge_needle',[0,-.539,2.13],[.112,-.539,2.205],.016,'dark');
-oval('chest_leaf',[.13,-.553,2],[.112,.022,.075],'lime');
-curve('chest_leaf_vein',[[.06,-.58,1.96],[.15,-.581,2.03]],.012,'white');
+// Three-dimensional yellow shell and broad front brim.
+oval('helmet_dark',[0,-.035,3.96],[1.105,.72,.47],'ink');
+oval('helmet_yellow',[0,-.052,3.997],[1.065,.678,.437],'yellow');
+rounded('helmet_front_brim_dark',[0,-.34,3.81],[2.42,1.37,.22],.11,'ink');
+rounded('helmet_front_brim',[0,-.35,3.837],[2.34,1.30,.145],.07,'yellow');
+curve('helmet_centre_rib',[[0,-.703,3.96],[0,-.64,4.18],[0,-.40,4.36]],.028,'orange');
+curve('helmet_side_rib_left',[[-.53,-.55,3.95],[-.49,-.46,4.18],[-.29,-.30,4.29]],.019,'orange');
+curve('helmet_side_rib_right',[[.53,-.55,3.95],[.49,-.46,4.18],[.29,-.30,4.29]],.019,'orange');
+// Leaf mark and small highlights.
+oval('helmet_leaf_back',[0,-.727,4.115],[.193,.026,.20],'white');
+oval('helmet_leaf_center',[0,-.756,4.125],[.135,.020,.145],'dark');
+curve('helmet_leaf_stem',[[-.082,-.781,4.042],[-.01,-.785,4.102],[.073,-.78,4.18]],.015,'white');
+oval('helmet_shine_left',[-.66,-.62,4.14],[.145,.025,.07],'white');
+
+// Face is a separate detachable group; chest gauge is rebuilt on a flat frontal plane.
+disk('gauge_outer',[0,-.485,2.14],.260,.050,'white','z');
+disk('gauge_dark',[0,-.526,2.14],.219,.035,'dark','z');
+disk('gauge_inner',[0,-.555,2.14],.179,.022,'white','z');
+['lime','lime','yellow','orange','red'].forEach((c,i)=>{
+ const theta=Math.PI-(i+.5)*Math.PI/5;
+ oval('gauge_segment_'+i,[.144*Math.cos(theta),-.584,2.14+.144*Math.sin(theta)],[.031,.020,.033],c);
+});
+rod('gauge_hand',[0,-.60,2.14],[.118,-.60,2.205],.014,'dark');
+oval('gauge_leaf',[.134,-.611,2.015],[.112,.026,.073],'lime');
+curve('gauge_leaf_stem',[[.065,-.648,1.974],[.145,-.647,2.035]],.012,'white');
+
 
 let faceGroup=null;
 function face(kind){
  if(faceGroup){root.remove(faceGroup);faceGroup.traverse(o=>{if(o.geometry)o.geometry.dispose()});}
- faceGroup=new THREE.Group(); faceGroup.name='expressions';root.add(faceGroup);
- const eye=(side,shape='normal')=>{
-   const x=side*.33;
-   if(shape==='happy')curve('eye',[[x-.11,-.67,3.35],[x,-.695,3.47],[x+.11,-.67,3.35]],.035,'glow',faceGroup);
-   else if(shape==='angry')curve('eye',[[x-.13,-.68,3.49-(side<0?0:.11)],[x+.13,-.68,3.49-(side<0?.11:0)]],.038,'glow',faceGroup);
-   else oval('eye',[x,-.663,3.34],[.105,.036,.203],'glow',faceGroup);
+ faceGroup=new THREE.Group();faceGroup.name='expressions';root.add(faceGroup);
+ const eye=(side,type='normal')=>{
+  const x=side*.345;
+  if(type==='happy'){
+   curve('eye_arc_'+side,[[x-.115,-.793,3.36],[x,-.805,3.475],[x+.115,-.793,3.36]],.035,'glow',faceGroup);
+  }else if(type==='angry'){
+   const raise=side<0?-.085:.085;
+   curve('eye_frown_'+side,[[x-.12,-.795,3.39+raise],[x+.12,-.795,3.39-raise]],.039,'glow',faceGroup);
+   oval('eye_pupil_'+side,[x,-.802,3.30],[.055,.027,.104],'glow',faceGroup);
+  }else{
+   oval('eye_'+side,[x,-.803,3.345],[.105,.031,.212],'glow',faceGroup);
+  }
  };
- if(kind==='happy'){eye(-1,'happy');eye(1,'happy');oval('mouth',[0,-.686,3.08],[.16,.03,.11],'glow',faceGroup);}
- else if(kind==='focus'||kind==='stop'){eye(-1,'angry');eye(1,'angry');rod('mouth',[-.12,-.68,3.08],[.12,-.68,3.08],.025,'glow',faceGroup);}
- else if(kind==='think'){eye(-1);eye(1);rod('mouth',[-.04,-.684,3.06],[.1,-.684,3.12],.026,'glow',faceGroup);}
- else if(kind==='alert'){eye(-1);eye(1);oval('mouth',[0,-.693,3.055],[.065,.024,.09],'glow',faceGroup);}
- else {eye(-1);eye(1);curve('smile',Array.from({length:11},(_,i)=>{let x=-.17+i*.034;return [x,-.678,3.085+1.6*x*x]}),.024,'glow',faceGroup);}
+ if(kind==='happy'){
+  eye(-1,'happy');eye(1,'happy');oval('happy_mouth',[0,-.813,3.08],[.158,.027,.103],'glow',faceGroup);
+ }else if(kind==='focus'||kind==='stop'){
+  eye(-1,'angry');eye(1,'angry');
+  rod('focused_mouth',[-.10,-.805,3.09],[.10,-.805,3.09],.021,'glow',faceGroup);
+ }else if(kind==='think'){
+  eye(-1);eye(1);curve('thinking_mouth',[[-.04,-.808,3.075],[.085,-.808,3.11]],.021,'glow',faceGroup);
+ }else if(kind==='alert'){
+  eye(-1);eye(1);oval('alert_mouth',[0,-.816,3.075],[.057,.024,.081],'glow',faceGroup);
+ }else{
+  eye(-1);eye(1);curve('smile',Array.from({length:13},(_,i)=>{const x=-.16+i*.026667;return [x,-.81,3.085+1.8*x*x]}),.024,'glow',faceGroup);
+ }
 }
 face('smile');
 
@@ -133,7 +206,7 @@ new ResizeObserver(resize).observe(view);resize();
 function animate(){requestAnimationFrame(animate);controls.update();renderer.render(scene,camera);}
 animate();
 const angles={
- front:[0,2.6,9.9],three:[6.1,3.0,7.7],side:[9.9,2.6,0],back:[0,2.6,-9.9]
+ front:[0,2.65,9.0],three:[5.7,3.08,7.05],side:[9.0,2.65,0],back:[0,2.65,-9.0]
 };
 function setView(name){
  const xyz=angles[name];camera.position.set(...xyz);controls.target.copy(target);controls.update();
@@ -146,10 +219,11 @@ document.querySelectorAll('.viewbtn').forEach(b=>b.addEventListener('click',()=>
 document.getElementById('reset').addEventListener('click',()=>setView('front'));
 document.getElementById('backdrop').addEventListener('change',e=>{area.className='canvas-area '+e.target.value});
 document.getElementById('expression').addEventListener('change',e=>face(e.target.value));
+document.getElementById('pose').addEventListener('change',e=>drawArms(e.target.value));
 document.getElementById('zoom').addEventListener('input',e=>{
  const v=+e.target.value; document.getElementById('zoom-read').textContent=v+'%';
  const direction=new THREE.Vector3().subVectors(camera.position,controls.target).normalize();
- camera.position.copy(controls.target).addScaledVector(direction,9.9*100/v);controls.update();
+ camera.position.copy(controls.target).addScaledVector(direction,9.0*100/v);controls.update();
 });
 const download=document.getElementById('download');
 download.addEventListener('click',async()=>{
@@ -166,7 +240,7 @@ download.addEventListener('click',async()=>{
   if(!blob)throw Error('PNG 截圖失敗');
   const url=URL.createObjectURL(blob);
   const a=document.createElement('a');a.href=url;
-  a.download='Bio_'+document.getElementById('expression').value+'_transparent_'+n+'px.png';
+  a.download='Bio_'+document.getElementById('expression').value+'_'+pose+'_transparent_'+n+'px.png';
   document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
   status.textContent='透明背景 PNG 已產生，可在下載資料夾查看。';
  }catch(err){status.textContent='圖片輸出失敗：'+err.message;console.error(err);}
@@ -176,4 +250,4 @@ download.addEventListener('click',async()=>{
   download.disabled=false;download.textContent='↓ 下載透明背景 PNG';
  }
 });
-status.textContent='Bio 程序化 3D 模型載入完成 · 可自由旋轉與截圖';
+status.textContent='Bio v0.4 正式站姿已載入 · 可切換動作、旋轉與透明截圖';
