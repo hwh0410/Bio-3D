@@ -1,3 +1,7 @@
+## NEW: Blender → GLB master workflow
+
+The project now has a **non-procedural modeling pipeline**. Follow [NEW_MODEL_PIPELINE.md](docs/NEW_MODEL_PIPELINE.md): prepare four references, generate or create an actual editable 3D mesh, refine in Blender, export `models/Bio_Master.glb`, then preview with [Master Viewer](master-preview.html). The viewer also accepts a local GLB file and exports transparent PNGs. **No completed AI-generated or hand-refined master GLB has been committed yet**. The old procedural viewer remains available for comparison.
+
 # Bio-3D | 沼氣領航員拜爾
 
 Bio is the **Biogas Inspector Buddy**, an original green robot mascot for biogas plant inspection and safety education.
