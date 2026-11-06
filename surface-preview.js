@@ -4,17 +4,17 @@ import {RoundedBoxGeometry} from 'three/addons/geometries/RoundedBoxGeometry.js'
 const area=document.querySelector('#surface-view'),status=document.querySelector('#surface-status');
 const renderer=new THREE.WebGLRenderer({antialias:true,alpha:true,preserveDrawingBuffer:true});
 renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));renderer.setClearColor(0,0);
-renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.03;
+renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=.91;
 area.append(renderer.domElement);
 const scene=new THREE.Scene(),camera=new THREE.PerspectiveCamera(33,1,.1,60);
-camera.position.set(0,2.52,9.0);
-const orbit=new OrbitControls(camera,renderer.domElement);orbit.target.set(0,2.17,0);orbit.enableDamping=true;orbit.enablePan=false;orbit.minDistance=4.5;orbit.maxDistance=15;orbit.update();
-scene.add(new THREE.HemisphereLight(0xffffff,0x9db5a4,2.1));
-const sun=new THREE.DirectionalLight(0xffffff,2.1);sun.position.set(-3,7,7);scene.add(sun);
-const rim=new THREE.DirectionalLight(0xccffb9,1.2);rim.position.set(4,3,-5);scene.add(rim);
-const colors={green:'#7BC043',light:'#A1DD58',shadow:'#2E6B3F',dark:'#183F29',ink:'#15261C',screen:'#394A41',yellow:'#FFD42A',yellowlight:'#FFE879',orange:'#FF9A3C',white:'#FCFFF6',led:'#B8FF66',red:'#E53935'};
+camera.position.set(0,2.25,11);
+const orbit=new OrbitControls(camera,renderer.domElement);orbit.target.set(0,2.23,0);orbit.enableDamping=true;orbit.enablePan=false;orbit.minDistance=4;orbit.maxDistance=32;orbit.update();
+scene.add(new THREE.HemisphereLight(0xffffff,0xb5c0ad,1.75));
+const sun=new THREE.DirectionalLight(0xffffff,1.45);sun.position.set(-3,7,7);scene.add(sun);
+const rim=new THREE.DirectionalLight(0xccefb8,.65);rim.position.set(4,3,-5);scene.add(rim);
+const colors={green:'#7BC043',light:'#B8FF66',shadow:'#2E6B3F',dark:'#2E6B3F',ink:'#12291E',screen:'#394A41',yellow:'#FFD42A',yellowlight:'#FFE27A',orange:'#FF9A3C',white:'#FCFFF6',led:'#B8FF66',red:'#E53935'};
 const mats={};for(const [key,color] of Object.entries(colors)){
- mats[key]=new THREE.MeshStandardMaterial({color,roughness:key==='screen'?.5:.73,metalness:0,side:THREE.DoubleSide,emissive:key==='led'?color:0,emissiveIntensity:key==='led'?.18:0});
+ mats[key]=new THREE.MeshStandardMaterial({color,roughness:key==='screen'?.63:.80,metalness:0,side:THREE.DoubleSide,emissive:key==='led'?color:0,emissiveIntensity:key==='led'?.10:0});
 }
 const toon=new THREE.Group();scene.add(toon);
 function mesh(name,geometry,color,parent=toon,p=[0,0,0]){
@@ -74,9 +74,9 @@ function visor(){
  const N=96,verts=[],ind=[];
  for(let layer=0;layer<2;layer++)for(let j=0;j<=1;j++)for(let i=0;i<=N;i++){
   let a=i/N*Math.PI*2;
-  let rx=j?1.19:.93,rz=j?.84:.56;
+  let rx=j?1.18:.92,rz=j?.79:.56;
   let x=rx*Math.cos(a),z=.13+rz*Math.sin(a);
-  let y=3.825+(layer?-.102:.025)+.025*Math.cos(a);
+  let y=3.835+(layer?-.065:.015)+.025*Math.cos(a);
   verts.push(x,y,z);
  }
  const stride=N+1;
@@ -89,8 +89,8 @@ function visor(){
  }
  const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(verts,3));g.setIndex(ind);g.computeVertexNormals();mesh('HelmetBrim',g,'yellow');
  pipe('HelmetBrimOuterTrim',Array.from({length:49},(_,i)=>{
-  let a=i/48*Math.PI*2;return [1.19*Math.cos(a),3.85+.025*Math.cos(a),.13+.84*Math.sin(a)];
- }),.029,'ink');
+  let a=i/48*Math.PI*2;return [1.18*Math.cos(a),3.85+.025*Math.cos(a),.13+.79*Math.sin(a)];
+ }),.021,'ink');
 }
 superBody('BodyDark',[0,1.96,-.01],[.79,.65,.46],[.63,.75],'dark');
 superBody('BodyShell',[0,1.98,.018],[.74,.595,.455],[.65,.77],'green');
@@ -101,15 +101,15 @@ for(const s of [-1,1]){
  superBody('Thigh'+s,[x,1.01,-.02],[.27,.43,.29],[.78,.72],'green');
  oval('Knee'+s,[x,.84,.225],[.22,.12,.088],'shadow');
  oval('Ankle'+s,[x,.50,.05],[.255,.14,.26],'dark');
- superBody('BootBorder'+s,[x,.285,.235],[.407,.28,.50],[.58,.52],'ink');
- superBody('Boot'+s,[x,.307,.25],[.36,.245,.455],[.59,.55],'green');
- round('BootHighlight'+s,[x,.34,.658],[.52,.12,.045],.035,'light');
+ superBody('BootBorder'+s,[x,.285,.235],[.398,.275,.48],[.61,.55],'ink');
+ superBody('Boot'+s,[x,.309,.25],[.355,.235,.433],[.61,.56],'green');
+ superBody('BootToe'+s,[x,.328,.563],[.282,.112,.135],[.60,.70],'light');
 }
 // Head and screen are one smooth silhouette with a recessed front-panel accent.
 superBody('HeadOuter',[0,3.20,-.04],[1.09,.755,.57],[.50,.55],'ink');
 superBody('HeadShell',[0,3.22,-.023],[1.035,.713,.548],[.55,.58],'green');
-superBody('ScreenRim',[0,3.24,.51],[.868,.545,.084],[.50,.49],'ink');
-superBody('FacePanel',[0,3.255,.581],[.803,.480,.055],[.49,.48],'screen');
+superBody('ScreenRim',[0,3.24,.515],[.925,.551,.075],[.54,.53],'ink');
+superBody('FacePanel',[0,3.255,.587],[.851,.490,.050],[.55,.53],'screen');
 for(const s of [-1,1]){
  const x=s*1.045;
  const ear=mesh('EarDark'+s,new THREE.CylinderGeometry(.292,.292,.13,48),'ink');
@@ -204,10 +204,49 @@ function setExpression(kind){
 setExpression('smile');setPose('formal');
 document.querySelectorAll('[data-pose]').forEach(x=>x.addEventListener('click',()=>setPose(x.dataset.pose)));
 document.querySelector('#expression').addEventListener('change',e=>setExpression(e.target.value));
-const angles={front:[0,2.52,9],three:[5.4,3.15,7.3],side:[9,2.52,0],back:[0,2.52,-9]};
-document.querySelector('#angle').addEventListener('change',e=>{camera.position.set(...angles[e.target.value]);orbit.update()});
-function resize(){const b=area.getBoundingClientRect();if(!b.width||!b.height)return;renderer.setSize(b.width,b.height,false);camera.aspect=b.width/b.height;camera.updateProjectionMatrix();}
-new ResizeObserver(resize).observe(area);resize();
+// Responsive perspective fitting. Keeps the complete character visible in narrow mobile canvases.
+const modelBounds={width:2.7,height:4.52,centerY:2.23};
+let currentAngle='front';
+let layoutAspect=0;
+const viewDirections={
+ front:[0,0,1],
+ three:[Math.sin(Math.PI/4),.095,Math.cos(Math.PI/4)],
+ side:[1,0,0],
+ back:[0,0,-1]
+};
+function fitDistance(){
+ const vertical=Math.atan(Math.tan(THREE.MathUtils.degToRad(camera.fov)/2));
+ const horizontal=Math.atan(Math.tan(vertical)*Math.max(.1,camera.aspect));
+ const verticalFit=(modelBounds.height/2)/Math.tan(vertical);
+ const horizontalFit=(modelBounds.width/2)/Math.tan(horizontal);
+ return Math.max(verticalFit,horizontalFit)*1.22;
+}
+function applyViewPreset(name=currentAngle){
+ currentAngle=name in viewDirections?name:'front';
+ const direction=new THREE.Vector3(...viewDirections[currentAngle]).normalize();
+ const distance=fitDistance();
+ orbit.target.set(0,modelBounds.centerY,0);
+ camera.position.copy(orbit.target).addScaledVector(direction,distance);
+ camera.near=.1;camera.far=200;camera.updateProjectionMatrix();
+ orbit.maxDistance=Math.max(32,distance*2.5);
+ orbit.update();
+}
+document.querySelector('#angle').addEventListener('change',e=>applyViewPreset(e.target.value));
+document.querySelector('#recenter').addEventListener('click',()=>applyViewPreset(currentAngle));
+function resize(){
+ const b=area.getBoundingClientRect();
+ if(!b.width||!b.height)return;
+ renderer.setSize(b.width,b.height,false);
+ const aspect=b.width/b.height;
+ camera.aspect=aspect;camera.updateProjectionMatrix();
+ // Don't erase user-controlled rotations when the mobile browser toolbar changes height.
+ if(!layoutAspect||Math.abs(aspect-layoutAspect)>.12){
+   layoutAspect=aspect;
+   applyViewPreset(currentAngle);
+ }
+}
+new ResizeObserver(resize).observe(area);
+resize();
 function render(){requestAnimationFrame(render);orbit.update();renderer.render(scene,camera);}render();
 document.querySelector('#download').addEventListener('click',async()=>{
  const n=Number(document.querySelector('#resolution').value),size=new THREE.Vector2();renderer.getSize(size);
