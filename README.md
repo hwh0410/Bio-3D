@@ -50,3 +50,13 @@ This viewer uses a procedural Three.js reconstruction matching the v0.1 Python m
 - The Pages viewer still uses in-browser Three.js geometry. **The Python-generated GLB/OBJ are not automatically updated by these viewer changes**.
 
 Deployment: commit changes to main; the existing GitHub Pages branch-root deployment should publish the updates.
+
+## Rig v1 research track
+
+The new rigging path is now tracked in:
+- [Rig v1 specification](docs/BIO_RIG_V1_SPEC.md)
+- [Design comparison checklist](docs/REFERENCE_CHECKLIST.md)
+- [Machine-readable rig schema](assets/bio-rig-v1.json)
+- [Rig Lab — deformable arm preview](rig-preview.html) (published at `https://hwh0410.github.io/Bio-3D/rig-preview.html` when Pages updates).
+
+The rig lab uses **actual Three.js Bones + Skeleton + SkinnedMesh skin indices/weights** on the arms. It is a technical proof of concept, **not a finished high-fidelity GLB or Blender file**. The official v0.4 character viewer and transparent PNG exporter remain unchanged.
