@@ -20,7 +20,7 @@ const mats={};for(const [key,color] of Object.entries(colors)){
 }
 const toon=new THREE.Group();scene.add(toon);
 const BIO_BUILD='v0.9.0 · armor-layering';
-const COLOR_TEST_NAMES=/^(HeadOuter|HeadShell|BodyBase|BodyShell|ChestPlate|BellyHighlight|ShoulderArmor|UpperArmArmor|ForearmArmor|ShinArmor|BootBorder|Boot|BootToe|Thigh|ArmSkin)/;
+const COLOR_TEST_NAMES=/^(HeadOuter|HeadShell|BodyBase|BodyShell|ChestPlate|BackArmorPanel|BellyHighlight|ShoulderArmor|UpperArmArmor|ForearmArmor|ShinArmor|BootBorder|Boot|BootToe|Thigh|ArmSkin)/;
 const originalMaterials=new Map();
 let flatColorMode=false;
 const flatGreen=new THREE.MeshBasicMaterial({color:'#7BC043',side:THREE.DoubleSide});
@@ -135,7 +135,10 @@ superBody('BodyShell',[0,1.99,.055],[.73,.58,.44],[.67,.82],'green');
 superBody('LowerTorso',[0,1.47,.03],[.56,.18,.36],[.84,.78],'shadow');
 // A slim curved highlight, not an oversized dark panel over the green body.
 // Chest cuirass floats shallowly above the bodysuit, without hiding the bright green shell.
-superBody('ChestPlate',[0,2.045,.452],[.575,.435,.064],[.66,.76],'green');
+superBody('ChestPlate',[0,2.045,.462],[.575,.435,.064],[.66,.76],'green');
+// Back access plate helps the shell read as wearable armor from rear views.
+superBody('BackArmorPanel',[0,2.05,-.478],[.40,.315,.034],[.79,.77],'green');
+superBody('BackArmorSeam',[0,2.05,-.519],[.345,.253,.015],[.78,.75],'shadow');
 superBody('ChestEdge',[0,1.65,.425],[.43,.041,.037],[.76,.76],'shadow');
 oval('Neck',[0,2.63,-.01],[.26,.14,.26],'shadow');
 for(const s of [-1,1]){
@@ -183,17 +186,17 @@ pipe('HelmetLogoVein',[[-.05,4.02,.706],[.003,4.074,.708],[.058,4.125,.709]],.00
 oval('HelmetShine',[-.48,4.17,.39],[.11,.045,.015],'white');
 // Chest gauge: correct outward orientation, coloured arc and overlaid leaf.
 const gauge=mesh('ChestGaugeWhite',new THREE.CylinderGeometry(.255,.255,.04,64),'white');
-gauge.rotation.x=Math.PI/2;gauge.position.set(0,2.075,.475);
+gauge.rotation.x=Math.PI/2;gauge.position.set(0,2.075,.588);
 const faceGauge=mesh('GaugeDark',new THREE.CylinderGeometry(.201,.201,.045,64),'shadow');
-faceGauge.rotation.x=Math.PI/2;faceGauge.position.set(0,2.075,.501);
+faceGauge.rotation.x=Math.PI/2;faceGauge.position.set(0,2.075,.615);
 const inner=mesh('GaugeWhite',new THREE.CylinderGeometry(.159,.159,.045,64),'white');
-inner.rotation.x=Math.PI/2;inner.position.set(0,2.075,.529);
+inner.rotation.x=Math.PI/2;inner.position.set(0,2.075,.643);
 ['green','green','yellow','orange','red'].forEach((c,i)=>{
  let a=Math.PI-(i+.5)*Math.PI/5;
- oval('GaugeMark'+i,[.126*Math.cos(a),2.075+.126*Math.sin(a),.565],[.031,.030,.014],c);
+ oval('GaugeMark'+i,[.126*Math.cos(a),2.075+.126*Math.sin(a),.679],[.031,.030,.014],c);
 });
-pipe('GaugeNeedle',[[0,2.075,.576],[.12,2.145,.576]],.012,'shadow');
-oval('GaugeLeaf',[.135,1.945,.562],[.118,.080,.023],'green');
+pipe('GaugeNeedle',[[0,2.075,.690],[.12,2.145,.690]],.012,'shadow');
+oval('GaugeLeaf',[.135,1.945,.676],[.118,.080,.023],'green');
 // Editable bone-driven arms: tube mesh has actual bone indices and smooth elbow weights.
 const arms=[];
 function arm(side){
