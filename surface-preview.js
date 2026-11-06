@@ -19,7 +19,7 @@ const mats={};for(const [key,color] of Object.entries(colors)){
  mats[key]=new THREE.MeshStandardMaterial({color,roughness:key==='screen'?.63:.80,metalness:0,side:THREE.DoubleSide,emissive:key==='led'?color:0,emissiveIntensity:key==='led'?.10:0});
 }
 const toon=new THREE.Group();scene.add(toon);
-const BIO_BUILD='v0.7.1 · 2026-11-06';
+const BIO_BUILD='v0.8.0 · curve-pass-1';
 const COLOR_TEST_NAMES=/^(HeadOuter|HeadShell|BodyBase|BodyShell|BootBorder|Boot|BootToe|Thigh|ArmSkin)/;
 const originalMaterials=new Map();
 let flatColorMode=false;
@@ -74,88 +74,104 @@ function tapered(name,p1,p2,r1,r2,color,parent=toon){
  o.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),delta.normalize());return o;
 }
 function helmetDome(){
- // Horizontal elliptical rings; explicit front/back, not a flattened sphere.
- const levels=24,around=80,verts=[],indices=[];
+ // Rounded safety helmet: smoother crown with subtle front fullness.
+ const levels=32,around=96,verts=[],indices=[];
  for(let j=0;j<=levels;j++){
-  const t=j/levels,angle=t*Math.PI/2;
-  const rad=Math.cos(angle),h=Math.sin(angle);
+  const t=j/levels,v=t*Math.PI/2,ring=Math.cos(v),rise=Math.sin(v);
   for(let i=0;i<=around;i++){
    const a=i/around*Math.PI*2;
-   const r=rad*.985+(.015*(1-t));
-   verts.push(r*Math.cos(a),3.86+.57*h,-.025+r*.67*Math.sin(a));
+   const frontBias=1+.075*Math.max(0,Math.sin(a));
+   const sideSoft=1-.045*Math.pow(Math.cos(a),2);
+   const x=1.01*ring*Math.cos(a)*sideSoft;
+   const z=-.02+.68*ring*Math.sin(a)*frontBias;
+   verts.push(x,3.86+.60*rise,z);
   }
  }
  for(let j=0;j<levels;j++)for(let i=0;i<around;i++){
-  const a=j*(around+1)+i,b=a+around+1;indices.push(a,b,a+1,b,b+1,a+1);
+  const a=j*(around+1)+i,b=a+around+1;
+  indices.push(a,b,a+1,b,b+1,a+1);
  }
- const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(verts,3));g.setIndex(indices);g.computeVertexNormals();return mesh('HelmetShell',g,'yellow');
+ const g=new THREE.BufferGeometry();
+ g.setAttribute('position',new THREE.Float32BufferAttribute(verts,3));
+ g.setIndex(indices);g.computeVertexNormals();
+ return mesh('HelmetShell',g,'yellow');
 }
+
 function visor(){
- // Elliptical, shallowly swept double-sided brim with a slightly raised back.
+ // Thin curved brim with a smooth front sweep and green-black edge.
  const N=96,verts=[],ind=[];
  for(let layer=0;layer<2;layer++)for(let j=0;j<=1;j++)for(let i=0;i<=N;i++){
-  let a=i/N*Math.PI*2;
-  let rx=j?1.18:.92,rz=j?.79:.56;
-  let x=rx*Math.cos(a),z=.13+rz*Math.sin(a);
-  let y=3.835+(layer?-.065:.015)+.025*Math.cos(a);
+  const a=i/N*Math.PI*2,outer=j===1;
+  const rx=outer?1.22:.98,rz=outer?.77:.56;
+  const x=rx*Math.cos(a);
+  const z=.18+.08*Math.max(0,Math.sin(a))+rz*Math.sin(a);
+  const y=3.84+.02*Math.cos(a)+(layer?-.05:.01);
   verts.push(x,y,z);
  }
  const stride=N+1;
  for(let layer=0;layer<2;layer++)for(let i=0;i<N;i++){
-  let a=layer*2*stride+i,b=a+stride;ind.push(a,b,a+1,b,b+1,a+1);
+  const a=layer*2*stride+i,b=a+stride;
+  ind.push(a,b,a+1,b,b+1,a+1);
  }
  for(let j=0;j<2;j++)for(let i=0;i<N;i++){
-  let a=j*stride+i,b=2*stride+j*stride+i;
+  const a=j*stride+i,b=2*stride+j*stride+i;
   ind.push(a,a+1,b,b,a+1,b+1);
  }
- const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(verts,3));g.setIndex(ind);g.computeVertexNormals();mesh('HelmetBrim',g,'yellow');
- pipe('HelmetBrimOuterTrim',Array.from({length:49},(_,i)=>{
-  let a=i/48*Math.PI*2;return [1.18*Math.cos(a),3.85+.025*Math.cos(a),.13+.79*Math.sin(a)];
- }),.021,'ink');
+ const g=new THREE.BufferGeometry();
+ g.setAttribute('position',new THREE.Float32BufferAttribute(verts,3));
+ g.setIndex(ind);g.computeVertexNormals();
+ mesh('HelmetBrim',g,'yellow');
+ pipe('HelmetBrimOuterTrim',Array.from({length:97},(_,i)=>{
+  const a=i/96*Math.PI*2;
+  return [1.22*Math.cos(a),3.85+.02*Math.cos(a),.18+.08*Math.max(0,Math.sin(a))+.77*Math.sin(a)];
+ }),.018,'ink');
 }
+
 // Primary body must be visible on ALL views. An opaque larger dark shell
 // previously occluded the green body almost completely.
-superBody('BodyBase',[0,1.96,-.01],[.795,.65,.465],[.63,.75],'green');
-superBody('BodyShell',[0,1.98,.048],[.755,.598,.468],[.65,.77],'green');
+superBody('BodyBase',[0,1.95,-.005],[.80,.66,.49],[.58,.70],'green');
+superBody('BodyShell',[0,1.99,.055],[.73,.58,.44],[.67,.82],'green');
 // A small lower connector creates a dark mechanical seam without covering the suit.
-superBody('LowerTorso',[0,1.49,.005],[.56,.20,.39],[.75,.7],'shadow');
-oval('Neck',[0,2.63,-.025],[.28,.15,.28],'dark');
+superBody('LowerTorso',[0,1.47,.03],[.56,.18,.36],[.84,.78],'shadow');
+// A slim curved highlight, not an oversized dark panel over the green body.
+superBody('BellyHighlight',[0,2.03,.454],[.31,.25,.012],[.90,.86],'light');
+oval('Neck',[0,2.63,-.01],[.26,.14,.26],'shadow');
 for(const s of [-1,1]){
  const x=s*.44;
- superBody('Thigh'+s,[x,1.01,-.02],[.27,.43,.29],[.78,.72],'green');
- oval('Knee'+s,[x,.84,.225],[.22,.12,.088],'shadow');
- oval('Ankle'+s,[x,.50,.05],[.255,.14,.26],'dark');
+ superBody('Thigh'+s,[x,1.00,0],[.27,.43,.29],[.79,.73],'green');
+ oval('Knee'+s,[x,.83,.20],[.19,.09,.07],'shadow');
+ oval('Ankle'+s,[x,.50,.04],[.22,.11,.22],'shadow');
  // Green boots with a subtle dark sole instead of fully black footwear.
- superBody('BootSole'+s,[x,.142,.235],[.395,.099,.488],[.61,.55],'shadow');
- superBody('BootBorder'+s,[x,.292,.235],[.398,.235,.48],[.61,.55],'green');
- superBody('Boot'+s,[x,.319,.265],[.365,.225,.439],[.61,.56],'green');
- superBody('BootToe'+s,[x,.328,.563],[.282,.112,.135],[.60,.70],'light');
+ superBody('BootSole'+s,[x,.15,.23],[.38,.09,.47],[.64,.57],'shadow');
+ superBody('BootBorder'+s,[x,.295,.24],[.39,.22,.47],[.63,.58],'green');
+ superBody('Boot'+s,[x,.325,.27],[.35,.21,.43],[.64,.60],'green');
+ superBody('BootToe'+s,[x,.34,.56],[.27,.10,.13],[.62,.72],'light');
 }
 // Head and screen are one smooth silhouette with a recessed front-panel accent.
 // Keep the actual head casing green at the front, sides AND back.
 // The original ink-coloured outer superellipsoid swallowed the inner green shell.
-superBody('HeadOuter',[0,3.20,-.04],[1.09,.755,.57],[.50,.55],'green');
-superBody('HeadShell',[0,3.22,.018],[1.045,.720,.565],[.55,.58],'green');
-superBody('ScreenRim',[0,3.24,.515],[.925,.551,.075],[.54,.53],'ink');
-superBody('FacePanel',[0,3.255,.587],[.851,.490,.050],[.55,.53],'screen');
+superBody('HeadOuter',[0,3.20,-.02],[1.05,.76,.53],[.44,.52],'green');
+superBody('HeadShell',[0,3.24,.03],[1.01,.72,.51],[.52,.58],'green');
+superBody('ScreenRim',[0,3.245,.515],[.95,.515,.070],[.60,.56],'ink');
+superBody('FacePanel',[0,3.26,.592],[.87,.455,.048],[.60,.57],'screen');
 for(const s of [-1,1]){
  const x=s*1.045;
- const ear=mesh('EarDark'+s,new THREE.CylinderGeometry(.292,.292,.13,48),'ink');
+ const ear=mesh('EarDark'+s,new THREE.CylinderGeometry(.285,.285,.12,48),'shadow');
  ear.rotation.z=Math.PI/2;ear.position.set(x,3.2,-.005);
- const ring=mesh('EarRing'+s,new THREE.CylinderGeometry(.235,.235,.095,48),'green');
+ const ring=mesh('EarRing'+s,new THREE.CylinderGeometry(.225,.225,.09,48),'green');
  ring.rotation.z=Math.PI/2;ring.position.set(x+s*.075,3.2,-.005);
- const center=mesh('EarCentre'+s,new THREE.CylinderGeometry(.169,.169,.06,48),'shadow');
+ const center=mesh('EarCentre'+s,new THREE.CylinderGeometry(.160,.160,.055,48),'shadow');
  center.rotation.z=Math.PI/2;center.position.set(x+s*.132,3.2,-.005);
 }
 helmetDome();visor();
-pipe('HelmetCenterSeam',[[0,3.87,.635],[0,4.10,.63],[0,4.31,.38],[0,4.44,-.02]],.020,'orange');
+pipe('HelmetCenterSeam',[[0,3.88,.63],[0,4.11,.61],[0,4.31,.36],[0,4.43,-.01]],.018,'orange');
 for(const s of [-1,1]){
- pipe('HelmetRib'+s,[[s*.58,3.86,.52],[s*.53,4.12,.45],[s*.33,4.35,.21]],.013,'orange');
+ pipe('HelmetRib'+s,[[s*.55,3.88,.49],[s*.49,4.11,.42],[s*.31,4.33,.18]],.011,'orange');
 }
-oval('HelmetLogoBorder',[0,4.055,.678],[.19,.203,.023],'white');
-const leaf=oval('HelmetLogo',[0,4.073,.702],[.132,.157,.015],'shadow');leaf.rotation.z=-.46;
-pipe('HelmetLogoVein',[[-.055,4.014,.724],[.006,4.07,.725],[.065,4.13,.725]],.011,'white');
-oval('HelmetShine',[-.54,4.18,.41],[.125,.055,.017],'white');
+oval('HelmetLogoBorder',[0,4.06,.665],[.18,.19,.022],'white');
+const leaf=oval('HelmetLogo',[0,4.075,.688],[.115,.145,.014],'shadow');leaf.rotation.z=-.48;
+pipe('HelmetLogoVein',[[-.05,4.02,.706],[.003,4.074,.708],[.058,4.125,.709]],.009,'white');
+oval('HelmetShine',[-.48,4.17,.39],[.11,.045,.015],'white');
 // Chest gauge: correct outward orientation, coloured arc and overlaid leaf.
 const gauge=mesh('ChestGaugeWhite',new THREE.CylinderGeometry(.255,.255,.04,64),'white');
 gauge.rotation.x=Math.PI/2;gauge.position.set(0,2.075,.475);
@@ -199,7 +215,8 @@ function arm(side){
  const skin=new THREE.SkinnedMesh(geo,mats.green);skin.name='ArmSkin'+(side<0?'L':'R');skin.frustumCulled=false;
  toon.add(skin);toon.updateMatrixWorld(true);skin.bind(new THREE.Skeleton([upper,fore,hand]));
  oval('ShoulderJoint'+side,[x,shoulderY,0],[.26,.26,.27],'shadow');
- superBody('Glove'+side,[0,-.065,.04],[.24,.235,.25],[.63,.63],'shadow',hand);
+ superBody('Glove'+side,[0,-.05,.055],[.205,.195,.215],[.60,.60],'shadow',hand);
+ superBody('GlovePalm'+side,[0,-.005,.135],[.11,.075,.05],[.92,.82],'shadow',hand);
  arms.push({side,upper,fore,hand});
 }
 arm(-1);arm(1);
@@ -221,13 +238,13 @@ function setExpression(kind){
   if(kind==='happy'){
    pipe('eyeArc'+side,[[x-.11,3.32,.645],[x,3.45,.647],[x+.11,3.32,.645]],.033,'led',faceGroup);
   }else{
-   oval('eye'+side,[x,3.35,.646],[.103,.194,.018],'led',faceGroup);
+   oval('eye'+side,[x,3.36,.646],[.095,.190,.017],'led',faceGroup);
   }
  };
  eye(-1);eye(1);
  if(kind==='happy')oval('happyMouth',[0,3.066,.651],[.145,.079,.016],'led',faceGroup);
  else if(kind==='alert')oval('alertMouth',[0,3.052,.654],[.050,.074,.015],'led',faceGroup);
- else pipe('smile',[[-.14,3.08,.655],[-.07,3.045,.666],[0,3.035,.669],[.07,3.045,.666],[.14,3.08,.655]],.022,'led',faceGroup);
+ else pipe('smile',[[-.13,3.08,.655],[-.06,3.05,.666],[0,3.04,.669],[.06,3.05,.666],[.13,3.08,.655]],.019,'led',faceGroup);
 }
 setExpression('smile');setPose('formal');
 // Expose diagnostic information for a clear cached-script versus geometry distinction.
