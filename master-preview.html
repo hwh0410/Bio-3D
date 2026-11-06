@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#153e2d">
+<title>Bio Master 3D Viewer · GLB 工作室</title>
+<link rel="stylesheet" href="./style.css">
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.164.1/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.164.1/examples/jsm/"}}</script>
+<style>
+.master-layout{max-width:1300px;padding:0 20px;margin:25px auto;display:grid;grid-template-columns:minmax(0,1fr) 335px;gap:20px}
+.master-window{height:min(74vh,750px);min-height:440px;border-radius:16px;overflow:hidden;position:relative;background-color:#fff;background-image:linear-gradient(45deg,#e8ece9 25%,transparent 25%),linear-gradient(-45deg,#e8ece9 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#e8ece9 75%),linear-gradient(-45deg,transparent 75%,#e8ece9 75%);background-size:28px 28px;background-position:0 0,0 14px,14px -14px,-14px 0}
+#master-view,#master-view canvas{width:100%;height:100%;display:block}#master-view{touch-action:none}
+.settings{padding:25px;background:#fff;border-radius:20px;border:1px solid #d8e3d6;height:max-content}
+.settings label{font-size:12px;font-weight:700;margin:16px 0 8px;display:block}.settings input[type=file],.settings select,.settings button{width:100%;font:inherit;font-size:12px;padding:11px;border:1px solid #d1e0cc;border-radius:10px;background:#f6faf4;color:#265b32}
+.settings button{cursor:pointer}.settings button.primary{background:#236940;color:white;font-weight:700}.settings p{font-size:12px;color:#677d69;line-height:1.8}
+.buttons{display:grid;grid-template-columns:1fr 1fr;gap:8px}.status-line{padding:12px 18px;color:#64776a;font-size:12px}
+.notice{background:#fff6df;color:#745720;padding:10px;border-radius:10px;font-size:12px}
+@media(max-width:850px){.master-layout{display:block;padding:0 12px;margin:14px auto}.master-window{height:55vh;min-height:380px}.settings{margin-top:12px}}
+</style></head>
+<body><header class="topbar"><div class="brand"><div class="logo">◈</div><div><strong>拜爾 Bio · Master Viewer</strong><small>GLB 3D 工作室｜新建模流程</small></div></div><div class="topright"><a href="./surface-preview.html">舊版預覽</a></div></header>
+<main class="master-layout"><section class="stage">
+<div class="stage-top"><div><span class="eyebrow">MASTER ASSET / GLB VIEWER</span><h1>真正的 3D 模型預覽</h1><p>載入 GLB · 旋轉與縮放 · 多視角 · 透明 PNG</p></div></div>
+<div class="master-window" id="master-window"><div id="master-view"></div></div>
+<div class="status-line" id="master-status" role="status">正在檢查正式模型…</div>
+</section>
+<aside class="settings"><div class="notice">本頁不會用橢球代替正式模型。若尚未有 Bio_Master.glb，請匯入你的 GLB 檔案。</div>
+<label for="master-file">載入本機 .glb</label><input id="master-file" type="file" accept=".glb,model/gltf-binary">
+<label>標準視角</label><div class="buttons"><button data-angle="front">正面</button><button data-angle="three">3/4</button><button data-angle="side">側面</button><button data-angle="back">背面</button></div>
+<button id="master-reset" style="margin-top:8px">↺ 完整取景</button>
+<label for="master-bg">預覽背景</label><select id="master-bg"><option value="checker">棋盤格</option><option value="white">白色</option><option value="green">淺綠</option></select>
+<label for="master-resolution">輸出解析度</label><select id="master-resolution"><option value="1024">1024 × 1024</option><option value="2048" selected>2048 × 2048</option></select>
+<button id="master-export" class="primary" style="margin-top:15px">下載透明 PNG</button>
+<p>本機上傳只會在你的瀏覽器內讀取，不會傳送到 GitHub。正式模型放入 <code>models/Bio_Master.glb</code> 後，此頁將自動載入。</p>
+<p><a href="https://github.com/hwh0410/Bio-3D/blob/main/docs/NEW_MODEL_PIPELINE.md">查看 Blender 建模流程</a></p>
+</aside></main>
+<script type="module" src="./master-viewer.js?v=1.0.0"></script></body></html>
