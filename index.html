@@ -14,7 +14,7 @@
 <body>
 <header class="topbar">
   <div class="brand"><div class="logo">◈</div><div><strong>沼氣領航員・拜爾</strong><small>Bio · Biogas Inspector Buddy</small></div></div>
-  <div class="topright"><span class="status"><i></i> 3D Studio v0.2</span><a href="https://github.com/hwh0410/Bio-3D" target="_blank" rel="noopener">GitHub ↗</a></div>
+  <div class="topright"><span class="status"><i></i> 3D Studio v0.4</span><a href="https://github.com/hwh0410/Bio-3D" target="_blank" rel="noopener">GitHub ↗</a></div>
 </header>
 <main class="layout">
   <section class="stage" aria-label="3D 預覽畫布">
@@ -30,7 +30,7 @@
     <section><div class="section-heading"><span class="num">02</span><h2>展示設定</h2></div>
       <label class="field-label" for="backdrop">預覽背景 <small>不影響透明輸出</small></label>
       <select id="backdrop"><option value="checker">透明棋盤格</option><option value="white">純白</option><option value="dark">深色</option><option value="green">柔和綠</option></select>
-      <label class="field-label" for="expression">表情</label>
+      <label class="field-label" for="pose">角色姿勢</label><select id="pose"><option value="formal" selected>正式版站姿・雙手自然垂放</option><option value="welcome">歡迎姿勢・右手招呼</option></select><label class="field-label" for="expression">表情</label>
       <select id="expression"><option value="smile">親切友善</option><option value="happy">開心微笑</option><option value="focus">專注巡檢</option><option value="think">思考判斷</option><option value="alert">注意警示</option><option value="stop">嚴格停止</option></select>
       <label class="field-label" for="zoom">畫面比例 / 縮放 <span id="zoom-read">100%</span></label>
       <input type="range" id="zoom" min="65" max="160" value="100" />
@@ -42,7 +42,7 @@
       <button id="download" class="primary wide">↓ 下載透明背景 PNG</button>
       <p class="note tiny">瀏覽器截圖由本機即時產生，不會上傳角色畫面。</p>
     </section>
-    <section class="about"><div class="section-heading"><span class="num">04</span><h2>模型說明</h2></div><p>依拜爾角色設定圖建立的可旋轉程序化 3D 初版，保留黃色安全帽、葉片標誌、發光眼睛與綠色機器人造型。後續可持續精修比例及動作。</p></section>
+    <section class="about"><div class="section-heading"><span class="num">04</span><h2>模型說明</h2></div><p>Bio v0.4 依原始設定圖調整頭身比例、圓角螢幕頭殼、寬帽簷、胸前儀表、手套與靴子，加入正式站姿及歡迎姿勢；仍屬程序化 3D 角色，並非原畫的逐像素複製。</p></section>
   </aside>
 </main>
 <footer>© Bio · 沼氣巡檢員 / Biogas Inspector Buddy · 角色展示工作室</footer>
